@@ -1,0 +1,72 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        }
+    },
+    "variables": {
+        "storageAccountName": "'sentia',[concat(uniquestring(resourceGroup().id))]",
+        "addressPrefix": "172.16.0.0/12",
+        "subnetName1": "Subnet1",
+        "subnetPrefix1": "172.16.1.0/24",
+        "subnetName2": "Subnet2",
+        "subnetPrefix2": "172.16.2.0/24",
+        "subnetName3": "Subnet3",
+        "subnetPrefix3": "172.16.3.0/24",
+        "virtualNetworkName": "MyVNET",
+        "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2018-02-01",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "Storage",
+            "properties": {}
+        },
+        {
+            "apiVersion": "2018-02-01",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('virtualNetworkName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('subnetName1')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix1')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('subnetName2')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix2')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('subnetName3')]",
+                        "properties": {
+                            "addressPrefix": "[variables('subnetPrefix3')]"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {}
+}
