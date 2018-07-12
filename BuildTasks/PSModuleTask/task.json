@@ -1,0 +1,67 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AArnott/vso-agent-tasks/9b41d803a/tasks.schema.json",
+    "id": "8f86f2e4-4748-4950-aad6-b59c118a901c",
+    "name": "PSModuleTask",
+    "friendlyName": "PSModuleTask",
+    "description": "This task is for running a psake script to run tests and publish a module",
+    "helpMarkDown": "",
+    "category": "Utility",
+    "visibility":[
+        "Build"
+    ],
+    "runsOn": [
+        "Agent"
+    ],
+    "author": "Kenny Van Hoylandt",
+    "version": {
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 0
+    },
+    "instanceNameFormat": "Test Module script",
+    "groups": [
+    ],
+    "inputs": [
+        {
+            "name": "TaskList",
+            "type": "pickList",
+            "options": {
+                "Test": "Test"
+            },
+            "label": "TaskList",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "the required tasks to run"
+        },
+        {
+            "name": "PSModule",
+            "type": "string",
+            "label": "PSModule",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "the Module to Test"
+        },
+        {
+            "name": "UserName",
+            "type": "string",
+            "label": "UserName",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "If the tests need a Credential, provide the username here"
+        },
+        {
+            "name": "Password",
+            "type": "string",
+            "label": "Password",
+            "defaultValue": "",
+            "required": false,
+            "helpMarkDown": "If the tests need a Credential, provide the password here"
+        }
+    ],
+    "execution": {
+        "PowerShell": {
+            "target": "$(currentDirectory)\\build.ps1",
+            "workingDirectory": "$(currentDirectory)"
+        }
+    }
+}

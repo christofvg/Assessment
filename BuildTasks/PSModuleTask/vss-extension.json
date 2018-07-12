@@ -1,0 +1,33 @@
+{
+    "manifestVersion": 1,
+    "id": "PSModuleTask",
+    "name": "PSModuleTask",
+    "version": "1.0.0",
+    "publisher": "Kenny Van Hoylandt",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],    
+    "description": "Tools for building with psake. Includes a Test Module Build.",
+    "categories": [
+        "Build and Release"
+    ],
+    "files": [
+        {
+            "path": "task.json"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "custom-build-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "PSModuleTask"
+            }
+        }
+    ]
+}

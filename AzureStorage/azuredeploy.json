@@ -11,7 +11,7 @@
         }
     },
     "variables": {
-        "storageAccountName": "'sentia',[concat(uniquestring(resourceGroup().id))]"
+        "storageAccountName": "[concat('sentia',uniquestring(resourceGroup().id))]"
     },
     "resources": [
         {
