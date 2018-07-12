@@ -16,7 +16,7 @@
     "version": {
         "Major": 1,
         "Minor": 0,
-        "Patch": 0
+        "Patch": 1
     },
     "instanceNameFormat": "Test ARM Templates",
     "groups": [
@@ -40,6 +40,30 @@
             "defaultValue": "",
             "required": true,
             "helpMarkDown": "the test file where the ARM Template is located"
+        },
+        {
+            "name": "TenantId",
+            "type": "string",
+            "label": "TenantId",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "provide the azure tenant id"
+        },
+        {
+            "name": "ClientId",
+            "type": "string",
+            "label": "ClientId",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "provide the azure client id of the service principal"
+        },
+        {
+            "name": "ClientPassword",
+            "type": "string",
+            "label": "ClientPassword",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "provide the azure client password of the service principal"
         }
     ],
     "execution": {
