@@ -1,3 +1,4 @@
+Import-Module AzureRM.Resources.Netcore
 Describe "testing ARM Template" {
     It " Should not generate output" {
         $testParams = @{

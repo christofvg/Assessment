@@ -1,0 +1,51 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AArnott/vso-agent-tasks/9b41d803a/tasks.schema.json",
+    "id": "c89ddc6a-8cad-4489-87e7-3ec98b42ab65",
+    "name": "ARMTemplateTask",
+    "friendlyName": "ARMTemplateTask",
+    "description": "This task is for running a psake script to run tests on ARM Templates",
+    "helpMarkDown": "",
+    "category": "Utility",
+    "visibility":[
+        "Build"
+    ],
+    "runsOn": [
+        "Agent"
+    ],
+    "author": "Kenny Van Hoylandt",
+    "version": {
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 0
+    },
+    "instanceNameFormat": "Test ARM Templates",
+    "groups": [
+    ],
+    "inputs": [
+        {
+            "name": "TaskList",
+            "type": "pickList",
+            "options": {
+                "Test": "Test"
+            },
+            "label": "TaskList",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "the required tasks to run"
+        },
+        {
+            "name": "TestFilePath",
+            "type": "filePath",
+            "label": "TestFilePath",
+            "defaultValue": "",
+            "required": true,
+            "helpMarkDown": "the test file where the ARM Template is located"
+        }
+    ],
+    "execution": {
+        "PowerShell": {
+            "target": "$(currentDirectory)\\build.ps1",
+            "workingDirectory": "$(currentDirectory)"
+        }
+    }
+}
