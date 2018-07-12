@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "West Europe"
+    },
+    "VNetAddressPrefix": {
+      "value": "172.16.0.0/12"
+    },
+    "SubnetPrefix1": {
+      "value": "172.16.1.0/24"
+    },
+    "SubnetPrefix2": {
+      "value": "172.16.2.0/24"
+    },
+    "SubnetPrefix3": {
+      "value": "172.16.3.0/24"
+    }
+  }
+}
