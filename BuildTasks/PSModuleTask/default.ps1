@@ -53,11 +53,11 @@ task Test -depends CheckDependencies {
 
 task Deploy -depends Test {
     #copy the items to the powershell modules folder on the build server
-    if (-not (Test-Path -Path "$Env:USERPROFILE\Documents\WindowsPowerShell\Modules\$PSModule")) {
-        New-Item -Path "$Env:USERPROFILE\Documents\WindowsPowerShell\Modules\$PSModule" -ItemType Directory
+    if (-not (Test-Path -Path "C:\Program Files\WindowsPowerShell\Modules\$PSModule")) {
+        New-Item -Path "C:\Program Files\WindowsPowerShell\Modules\$PSModule" -ItemType Directory
     }
     try {
-        Copy-Item -Path $SourceDir\$PSModule\* -Destination "$Env:USERPROFILE\Documents\WindowsPowerShell\Modules\$PSModule" -Recurse -Force -Exclude build.ps1,default.ps1,test-pester.xml -ErrorAction Stop
+        Copy-Item -Path $SourceDir\$PSModule\* -Destination "C:\Program Files\WindowsPowerShell\Modules\$PSModule" -Recurse -Force -Exclude build.ps1,default.ps1,test-pester.xml -ErrorAction Stop
     } catch {
         $err = $_
         Write-Error $err

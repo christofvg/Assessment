@@ -50,7 +50,7 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[variables('addressPrefix')]"
+                        "[parameters('VNETAddressPrefix')]"
                     ]
                 },
                 "subnets": [
