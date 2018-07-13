@@ -69,6 +69,232 @@ function New-SEResourceGroup {
     END {}
 }
 
-function New-SEPolicyDefintion {}
+function New-SEPolicyDefintionForResourceTypes {
+    [CmdletBinding()]
+    param (
+        [Parameter()]
+        [String]$PolicyDefinitionName = "SEResourceTypes"
+    )
+    BEGIN {}
 
-function Publish-SEPolicyDefinition {}
+    PROCESS {
+        $authHeader = GenerateHeader
+
+        $BaseUri = GetPolicyDefinitionBaseUri -SubscriptionId $azContext.Subscription.Id
+
+        $Definition = Get-SEPolicyDefinition -PolicyDefinitionName $PolicyDefinitionName
+        if ($Definition.Name -ne $PolicyDefinitionName) {
+            $policyDefinitionBody = @{
+                properties = @{
+                    mode = "all"
+                    displayname = "Allowed Resource Types"
+                    description = "This policy enables you to restrict Resource Types that could be deployed"
+                    parameters = @{
+                        listOfResourceTypesAllowed = @{
+                            type = "array"
+                            metadata = @{
+                                description = "the list of allowed resource types"
+                                displayname = "Allowed resource types"
+                                strongType = "resourceTypes"
+                            }
+                        }
+                    }
+                    policyRule = @{
+                        "if" = @{
+                            "not" = @{
+                                "field" = "type"
+                                "in" = "[Parameters('listOfResourceTypesAllowed')]"
+                            }
+                        }
+                        "then" = @{
+                            "effect" = "deny"
+                        }
+                    }
+                }
+            }
+            $paramsPolicyDefintion = @{
+                Uri         = "$($BaseUri.Uri)/$($PolicyDefinitionName)?api-version=2018-03-01"
+                Body        = $policyDefinitionBody | ConvertTo-Json -Depth 10
+                Method      = 'PUT'
+                Header      = $authHeader
+                ErrorAction = 'Stop'
+            }
+            try {
+                Invoke-WebRequest @paramsPolicyDefintion
+            } catch {
+                $err = $_
+                Write-Error $err
+                throw "Could not create a new Azure Policy Defintion"
+            }
+        } else {
+            Write-Output "Policy Definition: $PolicyDefinitionName already exists"
+        }
+    }
+
+    END {}
+}
+
+function Get-SEPolicyDefinition {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [String]$PolicyDefinitionName
+    )
+    $authHeader = GenerateHeader
+    $azContext = Get-AzureRmContext
+    $BaseUri = GetPolicyDefinitionBaseUri -SubscriptionId $azContext.Subscription.Id
+
+    $paramsPolicyDefinition = @{
+        Uri         = "$($BaseUri.Uri)/$($PolicyDefinitionName)?api-version=2018-03-01"
+        Method      = 'Get'
+        Header      = $authHeader
+        ErrorAction = 'Stop'
+    }
+    try {
+        $request = Invoke-WebRequest @paramsPolicyDefinition
+        $properties = $request.Content | ConvertFrom-Json
+        return (
+            [PSCustomObject]@{
+                Name        = $properties.name
+                Id          = $properties.id
+                DisplayName = $properties.properties.displayName
+                PolicyType  = $properties.properties.policyType
+                Mode        = $properties.properties.mode
+                Description = $properties.properties.description
+                Parameters  = $properties.properties.parameters
+                PolicyRule  = $properties.properties.policyRule
+            }
+        )
+    } catch {
+        $err = $_
+        Write-Error $err
+        throw "Could not get a Azure Policy Defintion"
+    }
+
+}
+
+function GetPolicyDefinitionBaseUri {
+    param (
+        [string]$SubscriptionId
+    )
+    return (
+        [PSCustomObject]@{
+            Uri = "https://management.azure.com/subscriptions/$SubscriptionId/providers/Microsoft.Authorization/policyDefinitions"
+        }
+    )
+}
+
+function GetPolicyAssignmentBaseUri {
+    param (
+        [string]$SubscriptionId
+    )
+    return (
+        [PSCustomObject]@{
+            Uri = "https://management.azure.com/subscriptions/$SubscriptionId/providers/Microsoft.Authorization/policyAssignments"
+        }
+    )
+}
+
+function GenerateHeader {
+    $azContext = Get-AzureRmContext
+    $azProfile = [Microsoft.Azure.Commands.Common.Authentication.Abstractions.AzureRmProfileProvider]::Instance.Profile
+    $profileClient = New-Object -TypeName Microsoft.Azure.Commands.ResourceManager.Common.RMProfileClient -ArgumentList ($azProfile)
+    $token = $profileClient.AcquireAccessToken($azContext.Subscription.TenantId)
+    return (
+        @{
+            'Content-Type'  = 'application/json'
+            'Authorization' = 'Bearer ' + $token.AccessToken
+        }
+    )
+}
+
+function Get-SEPolicyAssignment {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [String]$PolicyAssignmentName
+    )
+    $authHeader = GenerateHeader
+    $azContext = Get-AzureRmContext
+    $BaseUri = GetPolicyAssignmentBaseUri -SubscriptionId $azContext.Subscription.Id
+    $paramsPolicyAssignment = @{
+        Uri         = "$($BaseUri.Uri)/$($PolicyAssignmentName)?api-version=2018-03-01"
+        Method      = 'Get'
+        Header      = $authHeader
+        ErrorAction = 'Stop'
+    }
+    try {
+        $request = Invoke-WebRequest @paramsPolicyAssignment
+        $properties = $request.Content | ConvertFrom-Json
+        return (
+            [PSCustomObject]@{
+                Name        = $properties.name
+                Id          = $properties.id
+                DisplayName = $properties.properties.displayName
+                PolicyType  = $properties.properties.policyType
+                Mode        = $properties.properties.mode
+                Description = $properties.properties.description
+                Parameters  = $properties.properties.parameters
+                PolicyRule  = $properties.properties.policyRule
+            }
+        )
+    } catch {
+        $err = $_
+        Write-Error $err
+        throw "Could not get a Azure Policy Defintion"
+    }
+}
+function New-SEPolicyAssignmentForResourceTypes {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]$PolicyAssignmentName,
+
+        [Parameter(Mandatory)]
+        [String]$PolicyDefinitionName,
+
+        [Parameter(Mandatory)]
+        [ValidateSet('Microsoft.Compute', 'Microsoft.Network', 'Microsoft.Storage')]
+        [String[]]$ResourceTypes
+    )
+    $authHeader = GenerateHeader
+    $azContext = Get-AzureRmContext
+    $BaseUri = GetPolicyAssignmentBaseUri -SubscriptionId $azContext.Subscription.Id
+
+    $PolicyDefinition = Get-SEPolicyDefinition -PolicyDefinitionName $PolicyDefinitionName
+    $Assignment = Get-SEPolicyAssignment -PolicyAssignmentName $PolicyAssignmentName
+
+    if (-not $Assignment -and $PolicyDefinition) {
+        $policyAssignmentBody = @{
+            properties = @{
+                displayname = "Enforce Allowed Resource Types"
+                description = "Enforce Allowed Resource Types to Compute, Network and Storage"
+                metadata = @{
+                    assignedBy = "Kenny Van Hoylandt"
+                }
+                parameters = @{
+                    listOfResourceTypesAllowed = @{
+                        value = $ResourceTypes
+                    }
+                }
+                policyDefinitionId = $PolicyDefinition.Id
+            }
+        }
+
+        $paramsPolicyAssignment = @{
+            Uri         = "$($BaseUri.Uri)/$($PolicyAssignmentName)?api-version=2018-03-01"
+            Method      = 'PUT'
+            Body        = $policyAssignmentBody | ConvertTo-Json -Depth 10
+            Header      = $authHeader
+            ErrorAction = 'Stop'
+        }
+
+        try {
+            Invoke-WebRequest @paramsPolicyAssignment
+        } catch {
+            $err = $_
+            Write-Error $err
+            throw "Could not create a new Azure Policy Defintion"
+        }
+    }
+}
