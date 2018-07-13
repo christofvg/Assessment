@@ -69,8 +69,8 @@ function New-SEResourceGroup {
     END {}
 }
 
-function New-SEPolicyDefintionForResourceTypes {
-    [CmdletBinding()]
+function New-SEPolicyDefintionForResourceType {
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
     param (
         [Parameter()]
         [String]$PolicyDefinitionName = "SEResourceTypes"
@@ -120,7 +120,9 @@ function New-SEPolicyDefintionForResourceTypes {
                 ErrorAction = 'Stop'
             }
             try {
-                Invoke-WebRequest @paramsPolicyDefintion
+                if ($PSCmdlet.ShouldProcess("New Policy Definition: $PolicyDefinitionName")) {
+                    Invoke-WebRequest @paramsPolicyDefintion
+                }
             } catch {
                 $err = $_
                 Write-Error $err
@@ -244,8 +246,8 @@ function Get-SEPolicyAssignment {
         throw "Could not get a Azure Policy Defintion"
     }
 }
-function New-SEPolicyAssignmentForResourceTypes {
-    [CmdletBinding()]
+function New-SEPolicyAssignmentForResourceType {
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
     param (
         [Parameter(Mandatory)]
         [string]$PolicyAssignmentName,
@@ -290,7 +292,9 @@ function New-SEPolicyAssignmentForResourceTypes {
         }
 
         try {
-            Invoke-WebRequest @paramsPolicyAssignment
+            if ($PSCmdlet.ShouldProcess("New Policy Assignment: $PolicyAssignmentName")) {
+                Invoke-WebRequest @paramsPolicyAssignment
+            }
         } catch {
             $err = $_
             Write-Error $err
