@@ -272,11 +272,8 @@ function Get-SEPolicyAssignment {
                 Name        = $properties.name
                 Id          = $properties.id
                 DisplayName = $properties.properties.displayName
-                PolicyType  = $properties.properties.policyType
-                Mode        = $properties.properties.mode
                 Description = $properties.properties.description
                 Parameters  = $properties.properties.parameters
-                PolicyRule  = $properties.properties.policyRule
             }
         )
     } catch {
@@ -356,5 +353,7 @@ function New-SEPolicyAssignmentForResourceType {
             Write-Error $err
             throw "Could not create a new Azure Policy Defintion"
         }
+    } else {
+        Write-Output "Policy Assingment: $PolicyAssignmentName already created"
     }
 }
