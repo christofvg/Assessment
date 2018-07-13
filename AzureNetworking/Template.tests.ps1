@@ -16,8 +16,8 @@ Describe "testing ARM Template" {
         $testParams = @{
             ResourceGroupName     = 'SENetworkingTests'
             Mode                  = 'Incremental'
-            TemplateParameterFile = "$Env:System_DefaultWorkingDirectory/azuredeploy.parameters.json"
-            TemplateFile          = "$Env:System_DefaultWorkingDirectory/azuredeploy.json"
+            TemplateParameterFile = "$Env:System_DefaultWorkingDirectory/AzureNetworking/azuredeploy.parameters.json"
+            TemplateFile          = "$Env:System_DefaultWorkingDirectory/AzureNetworking/azuredeploy.json"
         }
         $test = Test-AzureRmResourceGroupDeployment @testParams
         $test | Should BeNullOrEmpty
