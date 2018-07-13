@@ -264,13 +264,13 @@ function New-SEPolicyAssignmentForResourceType {
     $BaseUri = GetPolicyAssignmentBaseUri -SubscriptionId $azContext.Subscription.Id
 
     $PolicyDefinition = Get-SEPolicyDefinition -PolicyDefinitionName $PolicyDefinitionName
-    $Assignment = Get-SEPolicyAssignment -PolicyAssignmentName $PolicyAssignmentName
+    $Assignment = Get-SEPolicyAssignment -PolicyAssignmentName $PolicyAssignmentName -ErrorAction SilentlyContinue
 
     if (-not $Assignment -and $PolicyDefinition) {
         $policyAssignmentBody = @{
             properties = @{
                 displayname = "Enforce Allowed Resource Types"
-                description = "Enforce Allowed Resource Types to Compute, Network and Storage"
+                description = "Enforce Allowed Resource Types to $ResourceTypes"
                 metadata = @{
                     assignedBy = "Kenny Van Hoylandt"
                 }
