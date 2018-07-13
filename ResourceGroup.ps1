@@ -1,12 +1,19 @@
 param (
     [Parameter(Mandatory)]
-    [String]$ApplicationId,
+    [String]$ClientId,
 
     [Parameter(Mandatory)]
-    [String]$ServicePrincipal,
+    [String]$ClientPassword,
 
     [Parameter(Mandatory)]
-    [String]$TenantId
+    [String]$TenantId,
+
+    [Parameter(Mandatory)]
+    [String]$ResourceGroupName,
+
+    [Parameter(Mandatory)]
+    [ValidateSet('Test','QA','Prod')]
+    [String]$Environment
 )
 $ModuleName = 'SEAzure'
 $ModulePath = (Resolve-Path $PSScriptRoot\$ModuleName).Path
@@ -18,12 +25,12 @@ try {
     Throw "Could not import module $ModuleName"
 }
 
+$Credential = [PSCredential]::new($ClientId, (ConvertTo-SecureString -String $ClientPassword -AsPlainText -Force))
 try {
     $connectParams = @{
-        ApplicationId    = $ApplicationId
-        ServicePrincipal = $ServicePrincipal
-        TenantId         = $TenantId
-        ErrorAction      = 'Stop'
+        Credential  = $Credential
+        TenantId    = $TenantId
+        ErrorAction = 'Stop'
     }
     Connect-AzureRmAccount @connectParams
 } catch {
