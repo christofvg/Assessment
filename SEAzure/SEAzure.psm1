@@ -2,9 +2,9 @@
 function New-SEResourceGroup {
     <#
     .SYNOPSIS
-        This command is used Create a new Resource Group for Sentia.
+        This command is used to Create a new Resource Group for Sentia.
     .DESCRIPTION
-        This command is used Create a new Resource Group for Sentia.
+        This command is used to Create a new Resource Group for Sentia.
         It will also apply two tags for Environment and Company.
     .EXAMPLE
         PS C:\> New-SEResourceGroup -ResourceGroupName SENetworking -Environment Test
@@ -21,7 +21,7 @@ function New-SEResourceGroup {
     .PARAMETER Company
         The name of the Company. This will be used to add a Company tag to the Azure Resource Group.
     .NOTES
-        Help 1.0 is written on 13/07/2018.
+        Help is written on 13/07/2018.
     #>
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
     param (
@@ -70,6 +70,19 @@ function New-SEResourceGroup {
 }
 
 function New-SEPolicyDefintionForResourceType {
+    <#
+    .SYNOPSIS
+        This command is used to create a new Azure Policy Definition to restrict the Resource Types that are allowed to create.
+    .DESCRIPTION
+        This command is used to create a new Azure Policy Definition to restrict the Resource Types that are allowed to create.
+    .EXAMPLE
+        PS C:\> New-SEPolicyDefinitionForResourceType -PolicyDefinitionName SEResourceTypes
+        This command will create a new Azure Policy Definition 'SEResourceTypes'.
+    .PARAMETER PolicyDefinitionName
+        The name of the Policy Definition.
+    .NOTES
+        Help is written on 13/07/2018.
+    #>
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
     param (
         [Parameter()]
@@ -79,7 +92,7 @@ function New-SEPolicyDefintionForResourceType {
 
     PROCESS {
         $authHeader = GenerateHeader
-
+        $azContext = Get-AzureRmContext
         $BaseUri = GetPolicyDefinitionBaseUri -SubscriptionId $azContext.Subscription.Id
 
         $Definition = Get-SEPolicyDefinition -PolicyDefinitionName $PolicyDefinitionName
@@ -137,6 +150,19 @@ function New-SEPolicyDefintionForResourceType {
 }
 
 function Get-SEPolicyDefinition {
+    <#
+    .SYNOPSIS
+        This command is used to get an existing Azure Policy Definition.
+    .DESCRIPTION
+        This command is used to get an existing Azure Policy Definition.
+    .EXAMPLE
+        PS C:\> Get-SEPolicyDefinition -PolicyDefinitionName SEResourceTypes
+        This command will get an existing Azure Policy Definition 'SEResourceTypes'.
+    .PARAMETER PolicyDefinitionName
+        The name of the Policy Definition.
+    .NOTES
+        Help is written on 13/07/2018.
+    #>
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -211,6 +237,19 @@ function GenerateHeader {
 }
 
 function Get-SEPolicyAssignment {
+    <#
+    .SYNOPSIS
+        This command is used to get an existing Azure Policy Assignment.
+    .DESCRIPTION
+        This command is used to get an existing Azure Policy Assignment.
+    .EXAMPLE
+        PS C:\> Get-SEPolicyAssignment -PolicyAssignmentName EnforceResourceTypes
+        This command will get an existing Azure Policy Assignment 'EnforceResourceTypes'.
+    .PARAMETER PolicyAssignmentName
+        The name of the Policy Assignment.
+    .NOTES
+        Help is written on 13/07/2018.
+    #>
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -247,6 +286,23 @@ function Get-SEPolicyAssignment {
     }
 }
 function New-SEPolicyAssignmentForResourceType {
+    <#
+    .SYNOPSIS
+        This command is used Create a new Azure Policy Assignment for Resource Types.
+    .DESCRIPTION
+        This command is used Create a new Azure Policy Assignment for Resource Types.
+    .EXAMPLE
+        PS C:\> New-SEPolicyAssignmentForResourceType -PolicyAssignmentName EnforceResourceTypes -PolicyDefinitionName SEResourceTypes -ResourceTypes 'Microsoft.Compute', 'Microsoft.Network', 'Microsoft.Storage'
+        This will create a new Policy Assignment for the resource types compute, network and storage.
+    .PARAMETER PolicyAssignmentName
+        The new name of the Policy Assignment.
+    .PARAMETER PolicyDefinitionName
+        The name of the Policy Definition that you want to assign.
+    .PARAMETER ResourceTypes
+        The Resource Types that must be restricted.
+    .NOTES
+        Help is written on 13/07/2018.
+    #>
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
     param (
         [Parameter(Mandatory)]
