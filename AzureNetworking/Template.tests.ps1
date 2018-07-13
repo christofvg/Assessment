@@ -3,7 +3,6 @@ param (
     [string]$ClientId,
     [string]$ClientPassword
 )
-Import-Module AzureRM.Resources.Netcore
 
 $Credential = [PSCredential]::new($ClientId, (ConvertTo-SecureString -String $ClientPassword -AsPlainText -Force))
 try {
