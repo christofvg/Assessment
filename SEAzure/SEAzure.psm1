@@ -69,24 +69,67 @@ function New-SEResourceGroup {
     END {}
 }
 
-function New-SEPolicyDefinitionForResourceType {
+function generateSEPolicyDefinitionForResourceType {
+    $policyDefinitionBody = @{
+        properties = @{
+            mode = "all"
+            displayname = "Allowed Resource Types"
+            description = "This policy enables you to restrict Resource Types that could be deployed"
+            policyRule = @{
+                "if" = @{
+                    "allOf" = @(
+                        @{
+                            "not" = @{
+                                "field" = "type"
+                                "like" = "Microsoft.Compute/*"
+                            }
+                        },
+                        @{
+                            "not" = @{
+                                "field" = "type"
+                                "like" = "Microsoft.Network/*"
+                            }
+                        },
+                        @{
+                            "not" = @{
+                                "field" = "type"
+                                "like" = "Microsoft.Storage/*"
+                            }
+                        }
+                    )
+                }
+                "then" = @{
+                    "effect" = "deny"
+                }
+            }
+        }
+    }
+    Write-Output $policyDefinitionBody
+}
+function New-SEPolicyDefinition {
     <#
     .SYNOPSIS
         This command is used to create a new Azure Policy Definition to restrict the Resource Types that are allowed to create.
     .DESCRIPTION
         This command is used to create a new Azure Policy Definition to restrict the Resource Types that are allowed to create.
     .EXAMPLE
-        PS C:\> New-SEPolicyDefinitionForResourceType -PolicyDefinitionName SEResourceTypes
-        This command will create a new Azure Policy Definition 'SEResourceTypes'.
+        PS C:\> New-SEPolicyDefinition -PolicyDefinitionName SEResourceTypes -PolicyDefinitionType ResourceTypes
+        This command will create a new Azure Policy Definition 'SEResourceTypes' to restrict the resource types that can be deployed.
     .PARAMETER PolicyDefinitionName
         The name of the Policy Definition.
+    .PARAMETER PolicyDefinitionType
+        The type of the Policy Definition.
     .NOTES
         Help is written on 13/07/2018.
     #>
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
     param (
         [Parameter(Mandatory)]
-        [String]$PolicyDefinitionName
+        [String]$PolicyDefinitionName,
+
+        [Parameter(Mandatory)]
+        [ValidateSet('ResourceTypes')]
+        [String]$PolicyDefinitionType
     )
     BEGIN {}
 
@@ -97,39 +140,8 @@ function New-SEPolicyDefinitionForResourceType {
 
         $Definition = Get-SEPolicyDefinition -PolicyDefinitionName $PolicyDefinitionName -ErrorAction SilentlyContinue
         if ($Definition.Name -ne $PolicyDefinitionName) {
-            $policyDefinitionBody = @{
-                properties = @{
-                    mode = "all"
-                    displayname = "Allowed Resource Types"
-                    description = "This policy enables you to restrict Resource Types that could be deployed"
-                    policyRule = @{
-                        "if" = @{
-                            "allOf" = @(
-                                @{
-                                    "not" = @{
-                                        "field" = "type"
-                                        "like" = "Microsoft.Compute/*"
-                                    }
-                                },
-                                @{
-                                    "not" = @{
-                                        "field" = "type"
-                                        "like" = "Microsoft.Network/*"
-                                    }
-                                },
-                                @{
-                                    "not" = @{
-                                        "field" = "type"
-                                        "like" = "Microsoft.Storage/*"
-                                    }
-                                }
-                            )
-                        }
-                        "then" = @{
-                            "effect" = "deny"
-                        }
-                    }
-                }
+            switch ($PolicyDefinitionType) {
+                'ResourceTypes' { $policyDefinitionBody = generateSEPolicyDefinitionForResourceType}
             }
             $paramsPolicyDefintion = @{
                 Uri         = "$($BaseUri.Uri)/$($PolicyDefinitionName)?api-version=2018-03-01"

@@ -73,7 +73,7 @@ FunctionsToExport = @(
     'Get-SEPolicyDefinition',
     'Get-SEPolicyAssignment',
     'New-SEResourceGroup',
-    'New-SEPolicyDefinitionForResourceType',
+    'New-SEPolicyDefinition',
     'New-SEPolicyAssignmentForResourceType'
 )
 
