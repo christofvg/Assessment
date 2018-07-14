@@ -13,7 +13,6 @@ Write-Output "Creating Policy Assignment: $PolicyAssignmentName"
 $paramsPolicyAssignment = @{
     PolicyAssignmentName = $PolicyAssignmentName
     PolicyDefinitionName = $PolicyDefinitionName
-    ResourceTypes        = 'Microsoft.Compute', 'Microsoft.Network', 'Microsoft.Storage'
 }
 New-SEPolicyAssignmentForResourceType @paramsPolicyAssignment
 Write-Output "Policy Assignment: $PolicyAssignmentName Created"

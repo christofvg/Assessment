@@ -69,7 +69,7 @@ function New-SEResourceGroup {
     END {}
 }
 
-function New-SEPolicyDefintionForResourceType {
+function New-SEPolicyDefinitionForResourceType {
     <#
     .SYNOPSIS
         This command is used to create a new Azure Policy Definition to restrict the Resource Types that are allowed to create.
@@ -85,8 +85,8 @@ function New-SEPolicyDefintionForResourceType {
     #>
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
     param (
-        [Parameter()]
-        [String]$PolicyDefinitionName = "SEResourceTypes"
+        [Parameter(Mandatory)]
+        [String]$PolicyDefinitionName
     )
     BEGIN {}
 
@@ -95,29 +95,35 @@ function New-SEPolicyDefintionForResourceType {
         $azContext = Get-AzureRmContext
         $BaseUri = GetPolicyDefinitionBaseUri -SubscriptionId $azContext.Subscription.Id
 
-        $Definition = Get-SEPolicyDefinition -PolicyDefinitionName $PolicyDefinitionName
+        $Definition = Get-SEPolicyDefinition -PolicyDefinitionName $PolicyDefinitionName -ErrorAction SilentlyContinue
         if ($Definition.Name -ne $PolicyDefinitionName) {
             $policyDefinitionBody = @{
                 properties = @{
                     mode = "all"
                     displayname = "Allowed Resource Types"
                     description = "This policy enables you to restrict Resource Types that could be deployed"
-                    parameters = @{
-                        listOfResourceTypesAllowed = @{
-                            type = "array"
-                            metadata = @{
-                                description = "the list of allowed resource types"
-                                displayname = "Allowed resource types"
-                                strongType = "resourceTypes"
-                            }
-                        }
-                    }
                     policyRule = @{
                         "if" = @{
-                            "not" = @{
-                                "field" = "type"
-                                "in" = "[Parameters('listOfResourceTypesAllowed')]"
-                            }
+                            "allOf" = @(
+                                @{
+                                    "not" = @{
+                                        "field" = "type"
+                                        "like" = "Microsoft.Compute/*"
+                                    }
+                                },
+                                @{
+                                    "not" = @{
+                                        "field" = "type"
+                                        "like" = "Microsoft.Network/*"
+                                    }
+                                },
+                                @{
+                                    "not" = @{
+                                        "field" = "type"
+                                        "like" = "Microsoft.Storage/*"
+                                    }
+                                }
+                            )
                         }
                         "then" = @{
                             "effect" = "deny"
@@ -289,33 +295,26 @@ function New-SEPolicyAssignmentForResourceType {
     .DESCRIPTION
         This command is used Create a new Azure Policy Assignment for Resource Types.
     .EXAMPLE
-        PS C:\> New-SEPolicyAssignmentForResourceType -PolicyAssignmentName EnforceResourceTypes -PolicyDefinitionName SEResourceTypes -ResourceTypes 'Microsoft.Compute', 'Microsoft.Network', 'Microsoft.Storage'
-        This will create a new Policy Assignment for the resource types compute, network and storage.
+        PS C:\> New-SEPolicyAssignmentForResourceType -PolicyDefinitionName SEResourceTypes
+        This will create a new Policy Assignment for the resource type compute.
     .PARAMETER PolicyAssignmentName
-        The new name of the Policy Assignment.
+        The name of the Policy Assignment that you want to assign.
     .PARAMETER PolicyDefinitionName
         The name of the Policy Definition that you want to assign.
-    .PARAMETER ResourceTypes
-        The Resource Types that must be restricted.
     .NOTES
         Help is written on 13/07/2018.
     #>
     [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='Medium')]
     param (
         [Parameter(Mandatory)]
-        [string]$PolicyAssignmentName,
+        [String]$PolicyAssignmentName,
 
         [Parameter(Mandatory)]
-        [String]$PolicyDefinitionName,
-
-        [Parameter(Mandatory)]
-        [ValidateSet('Microsoft.Compute', 'Microsoft.Network', 'Microsoft.Storage')]
-        [String[]]$ResourceTypes
+        [String]$PolicyDefinitionName
     )
     $authHeader = GenerateHeader
     $azContext = Get-AzureRmContext
     $BaseUri = GetPolicyAssignmentBaseUri -SubscriptionId $azContext.Subscription.Id
-
     $PolicyDefinition = Get-SEPolicyDefinition -PolicyDefinitionName $PolicyDefinitionName
     $Assignment = Get-SEPolicyAssignment -PolicyAssignmentName $PolicyAssignmentName -ErrorAction SilentlyContinue
 
@@ -323,14 +322,9 @@ function New-SEPolicyAssignmentForResourceType {
         $policyAssignmentBody = @{
             properties = @{
                 displayname = "Enforce Allowed Resource Types"
-                description = "Enforce Allowed Resource Types to $ResourceTypes"
+                description = "Enforce Allowed Resource Types"
                 metadata = @{
                     assignedBy = "Kenny Van Hoylandt"
-                }
-                parameters = @{
-                    listOfResourceTypesAllowed = @{
-                        value = $ResourceTypes
-                    }
                 }
                 policyDefinitionId = $PolicyDefinition.Id
             }
